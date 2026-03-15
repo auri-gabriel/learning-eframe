@@ -14,7 +14,8 @@ fn main() -> eframe::Result<()> {
 struct MyEguiApp {
     counter: i32,
     name: String,
-    dark_mode: bool
+    dark_mode: bool,
+    ui_scale: f32,
 }
 
 impl MyEguiApp {
@@ -23,6 +24,7 @@ impl MyEguiApp {
             counter: 0,
             name: String::new(),
             dark_mode: false,
+            ui_scale: 1.5
         }
     }
     
@@ -45,6 +47,10 @@ impl MyEguiApp {
             ui.heading("Settings");
 
             ui.checkbox(&mut self.dark_mode, "Dark mode");
+
+            ui.add(egui::Slider::new(&mut self.ui_scale, 0.5..=3.0)
+            .text("UI Scale")
+            );
 
             ui.separator();
 
@@ -86,6 +92,8 @@ impl MyEguiApp {
 
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.set_pixels_per_point(self.ui_scale);
+
         // layout structure
         self.top_bar(ctx);
         self.side_panel(ctx);
