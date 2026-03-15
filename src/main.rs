@@ -1,5 +1,12 @@
 use eframe::egui;
 
+#[derive(Default)]
+struct PersonRow {
+    name: String,
+    age: i32,
+    active: bool,
+}
+
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions::default();
 
@@ -16,6 +23,7 @@ struct MyEguiApp {
     name: String,
     dark_mode: bool,
     ui_scale: f32,
+    people: Vec<PersonRow>,
 }
 
 impl MyEguiApp {
@@ -24,10 +32,22 @@ impl MyEguiApp {
             counter: 0,
             name: String::new(),
             dark_mode: false,
-            ui_scale: 1.5
+            ui_scale: 1.5,
+            people: vec![
+                PersonRow {
+                    name: "Alice".to_string(),
+                    age: 28,
+                    active: true,
+                },
+                PersonRow {
+                    name: "Bruno".to_string(),
+                    age: 34,
+                    active: false,
+                },
+            ],
         }
     }
-    
+
     // -------- PANELS --------
 
     fn top_bar(&mut self, ctx: &egui::Context) {
@@ -48,9 +68,7 @@ impl MyEguiApp {
 
             ui.checkbox(&mut self.dark_mode, "Dark mode");
 
-            ui.add(egui::Slider::new(&mut self.ui_scale, 0.5..=3.0)
-            .text("UI Scale")
-            );
+            ui.add(egui::Slider::new(&mut self.ui_scale, 0.5..=3.0).text("UI Scale"));
 
             ui.separator();
 
@@ -62,6 +80,8 @@ impl MyEguiApp {
     fn main_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.counter_ui(ui);
+            ui.separator();
+            self.people_table_ui(ui);
         });
     }
 
@@ -88,6 +108,49 @@ impl MyEguiApp {
             ui.label(format!("Hello, {}", self.name));
         }
     }
+
+    fn people_table_ui(&mut self, ui: &mut egui::Ui) {
+        ui.heading("People Table");
+
+        let mut row_to_remove = None;
+
+        egui::Grid::new("people_table")
+            .num_columns(5)
+            .striped(true)
+            .show(ui, |ui| {
+                ui.strong("#");
+                ui.strong("Name");
+                ui.strong("Age");
+                ui.strong("Active");
+                ui.strong("Actions");
+                ui.end_row();
+
+                for (idx, person) in self.people.iter_mut().enumerate() {
+                    ui.label((idx + 1).to_string());
+                    ui.text_edit_singleline(&mut person.name);
+                    ui.add(egui::DragValue::new(&mut person.age).range(0..=120));
+                    ui.checkbox(&mut person.active, "");
+
+                    if ui.button("Delete").clicked() {
+                        row_to_remove = Some(idx);
+                    }
+
+                    ui.end_row();
+                }
+            });
+
+        if let Some(idx) = row_to_remove {
+            self.people.remove(idx);
+        }
+
+        if ui.button("Add row").clicked() {
+            self.people.push(PersonRow {
+                name: "New person".to_string(),
+                age: 18,
+                active: false,
+            });
+        }
+    }
 }
 
 impl eframe::App for MyEguiApp {
@@ -105,6 +168,5 @@ impl eframe::App for MyEguiApp {
         } else {
             ctx.set_visuals(egui::Visuals::light());
         }
-
     }
 }
