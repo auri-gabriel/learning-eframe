@@ -82,6 +82,14 @@ impl MyEguiApp {
             self.counter_ui(ui);
             ui.separator();
             self.people_table_ui(ui);
+            ui.separator();
+            let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+
+            let rect = response.rect;
+
+            let center = rect.center();
+
+            painter.circle_filled(center, 50.0, egui::Color32::LIGHT_BLUE);
         });
     }
 
